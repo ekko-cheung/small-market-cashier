@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import type { CreateGood, QueryGoods, UpdateGoods } from '../shared/types'
+import type { CreateBill, CreateGood, QueryGoods, UpdateGoods } from '../shared/types'
 
 // Custom APIs for renderer
 const api = {
@@ -12,7 +12,11 @@ const api = {
   },
   updateGoods: (goods: UpdateGoods) => {
     return ipcRenderer.invoke('goods:update', goods)
-  }
+  },
+  createBills: (bills: CreateBill) => ipcRenderer.invoke('bills:create', bills),
+  queryBills: (query: QueryGoods) => ipcRenderer.invoke('bills:query', query),
+  createPayments: (name: string) => ipcRenderer.invoke('payments:create', name),
+  queryPayments: () => ipcRenderer.invoke('payments:query')
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

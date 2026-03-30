@@ -25,7 +25,23 @@ export interface Result<T> {
   total?: number
 }
 
+export interface CreateBill {
+  items: {
+    goodId: number
+    quantity: number
+    total: number
+  }[]
+  payment: number
+}
+
+export interface QueryBills {
+  limit: number
+  offset: number
+  ltCreateAt?: string
+  gtCreateAt?: string
+}
+
 export type Goods = typeof goodsTable.$inferSelect
-export type Bills = typeof billsTable.$inferSelect
+export type Bills = typeof billsTable.$inferInsert & { payment: Payments }
 export type BillItems = typeof billItemsTable.$inferSelect
 export type Payments = typeof paymentsTable.$inferSelect

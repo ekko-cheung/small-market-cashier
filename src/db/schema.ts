@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm'
+import { relations, sql } from 'drizzle-orm'
 import { int, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
 export const goodsTable = sqliteTable('goods', {
@@ -30,3 +30,13 @@ export const paymentsTable = sqliteTable('payments', {
   name: text().default(''),
   createAt: text().default(sql`(CURRENT_TIMESTAMP)`)
 })
+
+export const billsRelations = relations(billsTable, ({ many, one }) => ({
+  payment: one(paymentsTable, { fields: [billsTable.payment], references: [paymentsTable.id] }),
+  billItems: many(billItemsTable)
+}))
+
+export const billItemsRelations = relations(billItemsTable, ({ one }) => ({
+  bill: one(billsTable, { fields: [billItemsTable.billId], references: [billsTable.id] }),
+  good: one(goodsTable, { fields: [billItemsTable.goodId], references: [goodsTable.id] })
+}))

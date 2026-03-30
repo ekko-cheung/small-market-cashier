@@ -7,7 +7,9 @@ const { Sider } = Layout
 const items = [
   { key: '/', label: '主页' },
   { key: '/goods', label: '商品管理' },
-  { key: '/front_desk_sales', label: '前台销售' }
+  { key: '/front_desk_sales', label: '前台销售' },
+  { key: '/payments', label: '支付方式' },
+  { key: '/bills', label: '账单' }
 ]
 
 function App(): React.JSX.Element {

@@ -1,8 +1,10 @@
-import { Card, Input, notification, Space, Table, type TableProps } from 'antd'
-import { useMemo, useState } from 'react'
+import { Button, Card, Input, notification, Select, Space, Table, type TableProps } from 'antd'
+import { useEffect, useMemo, useState } from 'react'
+import { Payments } from 'src/shared/types'
 
 type TableData = {
   id: number
+  index: number
   barcode: string
   name: string
   price: number
@@ -13,7 +15,7 @@ type TableData = {
 const columns: TableProps<TableData>['columns'] = [
   {
     title: 'id',
-    dataIndex: 'id',
+    dataIndex: 'index',
     key: 'id'
   },
   {
@@ -68,7 +70,8 @@ export default function FrontDeskSales() {
 
     if (!existingGood) {
       newGoods.push({
-        id: goods.length + 1,
+        index: goods.length + 1,
+        id: good.id,
         barcode: good.barcode!,
         name: good.name!,
         price: good.price!,
@@ -87,6 +90,28 @@ export default function FrontDeskSales() {
     return { totalQuntity: totalQuantity, totalPrice }
   }, [goods])
 
+  const [payments, setPayments] = useState<Payments[]>([])
+  const [selectPayment, setSelectPayment] = useState(0)
+  const fetchPayments = async () => {
+    const result = await window.api.queryPayments()
+    if (result.data) {
+      setPayments(result.data)
+      setSelectPayment(result.data[0].id)
+    }
+  }
+  useEffect(() => {
+    fetchPayments()
+  }, [])
+
+  const handleCreateBills = async () => {
+    await window.api.createBills({
+      items: goods.map((item) => ({ goodId: item.id, quantity: item.quantity, total: item.total })),
+      payment: selectPayment
+    })
+    setGoods([])
+    notification.success({ title: '结算成功' })
+  }
+
   return (
     <>
       <Card style={{ marginBottom: '10px' }}>
@@ -98,6 +123,21 @@ export default function FrontDeskSales() {
           />
           <span>总数量: {totalQuntity}</span>
           <span>总价: {totalPrice}</span>
+          <Button onClick={() => setGoods([])}>清空</Button>
+        </Space>
+      </Card>
+      <Card style={{ marginBottom: '10px' }}>
+        <Space>
+          支付方式:
+          <Select
+            style={{ width: '80px' }}
+            options={payments.map((item) => ({ value: item.id, label: item.name }))}
+            value={selectPayment}
+            onChange={(v) => setSelectPayment(v)}
+          />
+          <Button type="primary" disabled={goods.length === 0} onClick={handleCreateBills}>
+            结算
+          </Button>
         </Space>
       </Card>
       <Table columns={columns} dataSource={goods} />
