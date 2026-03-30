@@ -1,4 +1,14 @@
-import { Button, Card, Input, notification, Select, Space, Table, type TableProps } from 'antd'
+import {
+  Button,
+  Card,
+  Input,
+  InputNumber,
+  notification,
+  Select,
+  Space,
+  Table,
+  type TableProps
+} from 'antd'
 import { useEffect, useMemo, useState } from 'react'
 import { Payments } from 'src/shared/types'
 
@@ -12,42 +22,71 @@ type TableData = {
   total: number
 }
 
-const columns: TableProps<TableData>['columns'] = [
-  {
-    title: 'id',
-    dataIndex: 'index',
-    key: 'id'
-  },
-  {
-    title: '条码',
-    dataIndex: 'barcode',
-    key: 'barcode'
-  },
-  {
-    title: '名称',
-    dataIndex: 'name',
-    key: 'name'
-  },
-  {
-    title: '价格',
-    dataIndex: 'price',
-    key: 'price'
-  },
-  {
-    title: '数量',
-    dataIndex: 'quantity',
-    key: 'quantity'
-  },
-  {
-    title: '总价',
-    dataIndex: 'total',
-    key: 'total'
-  }
-]
-
 export default function FrontDeskSales() {
   const [goods, setGoods] = useState<TableData[]>([])
   const [barcode, setBarcode] = useState('')
+
+  const columns: TableProps<TableData>['columns'] = [
+    {
+      title: 'id',
+      dataIndex: 'index',
+      key: 'id'
+    },
+    {
+      title: '条码',
+      dataIndex: 'barcode',
+      key: 'barcode'
+    },
+    {
+      title: '名称',
+      dataIndex: 'name',
+      key: 'name'
+    },
+    {
+      title: '价格',
+      dataIndex: 'price',
+      key: 'price'
+    },
+    {
+      title: '数量',
+      dataIndex: 'quantity',
+      key: 'quantity',
+      render: (_, record) => (
+        <InputNumber
+          value={record.quantity}
+          min={1}
+          onChange={(v) => {
+            const newGoods = goods.map((item) => {
+              if (item.id === record.id) {
+                item.quantity = v ?? 1
+                item.total = item.quantity * item.price
+              }
+              return item
+            })
+            setGoods(newGoods)
+          }}
+        />
+      )
+    },
+    {
+      title: '总价',
+      dataIndex: 'total',
+      key: 'total'
+    },
+    {
+      render: (_, record) => (
+        <Button
+          type="text"
+          danger
+          onClick={() => {
+            setGoods(goods.filter((item) => item.id !== record.id))
+          }}
+        >
+          删除
+        </Button>
+      )
+    }
+  ]
 
   const handleBarcodeEnter = async () => {
     const resp = await window.api.queryGoods({ barcode })
