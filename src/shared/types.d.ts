@@ -42,6 +42,9 @@ export interface QueryBills {
 }
 
 export type Goods = typeof goodsTable.$inferSelect
-export type Bills = typeof billsTable.$inferInsert & { payment: Payments }
+export type Bills = typeof billsTable.$inferInsert & {
+  payment: Payments
+  billItems: BillItems & { good: Goods }[]
+}
 export type BillItems = typeof billItemsTable.$inferSelect
 export type Payments = typeof paymentsTable.$inferSelect

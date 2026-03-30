@@ -41,7 +41,46 @@ export default function BillsPage() {
 
   return (
     <>
-      <Table columns={columns} dataSource={bills} />
+      <Table
+        columns={columns}
+        dataSource={bills}
+        rowKey={'id'}
+        expandable={{
+          expandedRowRender: (record) => BillItemsTable(record.billItems)
+        }}
+      />
     </>
   )
+}
+
+function BillItemsTable(record: Bills['billItems']) {
+  const columns: TableProps<Bills['billItems'][number]>['columns'] = [
+    {
+      title: 'Id',
+      dataIndex: 'id',
+      key: 'id'
+    },
+    {
+      title: '名称',
+      dataIndex: ['good', 'name'],
+      key: 'name'
+    },
+    {
+      title: 'Barcode',
+      dataIndex: ['good', 'barcode'],
+      key: 'barcode'
+    },
+    {
+      title: '数量',
+      dataIndex: 'quantity',
+      key: 'quantity'
+    },
+    {
+      title: '总价',
+      dataIndex: 'price',
+      key: 'price'
+    }
+  ]
+
+  return <Table columns={columns} dataSource={record} pagination={false} />
 }

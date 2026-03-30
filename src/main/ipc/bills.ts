@@ -42,7 +42,11 @@ async function queryBills(query: QueryBills) {
   const bills = await db.query.billsTable.findMany({
     with: {
       payment: true,
-      billItems: true
+      billItems: {
+        with: {
+          good: true
+        }
+      }
     },
     where: and(...filters),
     limit: query.limit,
