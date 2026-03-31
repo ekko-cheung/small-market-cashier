@@ -22,6 +22,8 @@ declare global {
       queryBills: (query: QueryBills) => Promise<Result<Bills[]>>
       createPayments: (payment: name) => Promise<Result<void>>
       queryPayments: () => Promise<Result<Payments[]>>
+      queryBillsTodaySalesNumberAndOrder: () => Promise<Result<{ sales: number; orders: number }[]>>
+      queryBillsLast7DaysGrouped: () => Promise<Result<{ date: string; sales: number }[]>>
     }
   }
 }

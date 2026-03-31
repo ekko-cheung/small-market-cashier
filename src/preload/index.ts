@@ -16,7 +16,9 @@ const api = {
   createBills: (bills: CreateBill) => ipcRenderer.invoke('bills:create', bills),
   queryBills: (query: QueryGoods) => ipcRenderer.invoke('bills:query', query),
   createPayments: (name: string) => ipcRenderer.invoke('payments:create', name),
-  queryPayments: () => ipcRenderer.invoke('payments:query')
+  queryPayments: () => ipcRenderer.invoke('payments:query'),
+  queryBillsTodaySalesNumberAndOrder: () => ipcRenderer.invoke('bills:todaySalesNumberAndOrders'),
+  queryBillsLast7DaysGrouped: () => ipcRenderer.invoke('bills:salesLast7daysGrouped')
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to
