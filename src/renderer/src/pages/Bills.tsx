@@ -1,4 +1,4 @@
-import { Table, TableProps } from 'antd'
+import { Table, TableProps, DatePicker, Button, Space } from 'antd'
 import { useEffect, useState } from 'react'
 import { Bills } from 'src/shared/types'
 
@@ -27,24 +27,72 @@ export default function BillsPage() {
   ]
 
   const [bills, setBills] = useState<Bills[]>([])
-  const fetchBills = async () => {
-    const result = await window.api.queryBills({
-      limit: 10,
-      offset: 1
-    })
-    if (result.data) setBills(result.data)
-    console.log(result)
+  const [dateRange, setDateRange] = useState<[string, string] | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+  const [total, setTotal] = useState(0)
+
+  const fetchBills = async (
+    page: number = 1,
+    size: number = 10,
+    startDate?: string,
+    endDate?: string
+  ) => {
+    const query: any = { limit: size, offset: page }
+    if (startDate) query.gtCreateAt = startDate + ' 00:00:00'
+    if (endDate) query.ltCreateAt = endDate + ' 23:59:59'
+    const result = await window.api.queryBills(query)
+    if (result.data) {
+      setBills(result.data)
+      setTotal(result.total || 0)
+    }
   }
+
+  const handleSearch = () => {
+    setCurrentPage(1)
+    if (dateRange) {
+      fetchBills(1, pageSize, dateRange[0], dateRange[1])
+    } else {
+      fetchBills(1, pageSize)
+    }
+  }
+
   useEffect(() => {
-    fetchBills()
+    fetchBills(1, 10)
   }, [])
 
   return (
     <>
+      <Space style={{ marginBottom: 16 }}>
+        <DatePicker.RangePicker
+          onChange={(dates) => {
+            if (dates && dates[0] && dates[1]) {
+              setDateRange([dates[0].format('YYYY-MM-DD'), dates[1].format('YYYY-MM-DD')])
+            } else {
+              setDateRange(null)
+            }
+          }}
+        />
+        <Button onClick={handleSearch} type="primary">
+          搜索
+        </Button>
+      </Space>
       <Table
         columns={columns}
         dataSource={bills}
         rowKey={'id'}
+        pagination={{
+          current: currentPage,
+          pageSize,
+          total,
+          onChange: (page, size) => {
+            setCurrentPage(page)
+            setPageSize(size)
+            const start = dateRange ? dateRange[0] : undefined
+            const end = dateRange ? dateRange[1] : undefined
+            fetchBills(page, size, start, end)
+          }
+        }}
         expandable={{
           expandedRowRender: (record) => BillItemsTable(record.billItems)
         }}
