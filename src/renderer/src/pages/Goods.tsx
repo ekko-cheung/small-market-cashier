@@ -1,5 +1,15 @@
 import CreateGoodsDrawer from '@renderer/components/CreateGoodsDrawer'
-import { Button, Input, InputNumber, notification, Space, Table, type TableProps } from 'antd'
+import {
+  Button,
+  Card,
+  Form,
+  Input,
+  InputNumber,
+  notification,
+  Space,
+  Table,
+  type TableProps
+} from 'antd'
 import { useEffect, useState } from 'react'
 import type { Goods } from 'src/shared/types'
 
@@ -95,7 +105,7 @@ export default function GoodsPage(): React.JSX.Element {
                       const { [record.id]: _, ...rest } = prev
                       return rest
                     })
-                    fetchGoods()
+                    fetchGoods(form.getFieldsValue())
                   }
                 }}
               >
@@ -126,19 +136,24 @@ export default function GoodsPage(): React.JSX.Element {
   ]
 
   const [goods, setGoods] = useState<Goods[]>([])
-
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
     total: 0
   })
+  const [form] = Form.useForm()
 
-  const fetchGoods = async () => {
+  const fetchGoods = async (
+    values: { name?: string; barcode?: string },
+    offset: number | undefined = undefined
+  ) => {
     setEditingIds(new Set())
     setEditingValues({})
     const resp = await window.api.queryGoods({
       limit: pagination.pageSize,
-      offset: pagination.current
+      offset: offset || pagination.current,
+      name: values?.name || '',
+      barcode: values?.barcode || ''
     })
     if (resp.message)
       return notification.error({ title: '查询商品失败', description: resp.message })
@@ -148,18 +163,51 @@ export default function GoodsPage(): React.JSX.Element {
   }
 
   useEffect(() => {
-    fetchGoods()
-  }, [pagination.current])
+    fetchGoods(form.getFieldsValue())
+  }, [])
 
   const [createDrawerOpen, setCreateDrawerOpen] = useState(false)
   const onCreateDrawerClose = () => {
     setCreateDrawerOpen(false)
     setPagination((prev) => ({ ...prev, current: 1 }))
+    fetchGoods({})
   }
 
   return (
     <>
       <div style={{ marginBottom: '5px' }}>
+        <Card style={{ marginBottom: '12px' }}>
+          <Form layout="inline" form={form}>
+            <Form.Item label="名称" name="name">
+              <Input />
+            </Form.Item>
+            <Form.Item label="Barcode" name="barcode">
+              <Input />
+            </Form.Item>
+            <Form.Item>
+              <Space>
+                <Button
+                  onClick={() => {
+                    form.resetFields()
+                    setPagination((prev) => ({ ...prev, current: 1 }))
+                    fetchGoods(form.getFieldsValue())
+                  }}
+                >
+                  重置
+                </Button>
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    setPagination((prev) => ({ ...prev, current: 1 }))
+                    fetchGoods(form.getFieldsValue())
+                  }}
+                >
+                  搜索
+                </Button>
+              </Space>
+            </Form.Item>
+          </Form>
+        </Card>
         <Space>
           <Button onClick={() => window.location.reload()}>刷新</Button>
           <Button type="primary" onClick={() => setCreateDrawerOpen(true)}>
@@ -174,8 +222,9 @@ export default function GoodsPage(): React.JSX.Element {
           current: pagination.current,
           pageSize: pagination.pageSize,
           total: pagination.total,
-          onChange(page, pageSize) {
-            setPagination((prev) => ({ ...prev, current: page, pageSize }))
+          onChange(page) {
+            setPagination((prev) => ({ ...prev, current: page }))
+            fetchGoods(form.getFieldsValue(), page)
           }
         }}
       />

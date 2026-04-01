@@ -30,12 +30,12 @@ export default function Home(): React.JSX.Element {
           <Row gutter={6}>
             <Col span={12}>
               <Card>
-                <Statistic title="今日销售额" value={todayBillData.sales} />
+                <Statistic title="今日销售额" value={todayBillData.sales ?? 0} />
               </Card>
             </Col>
             <Col span={12}>
               <Card>
-                <Statistic title="今日销售单数" value={todayBillData.orders} />
+                <Statistic title="今日销售单数" value={todayBillData.orders ?? 0} />
               </Card>
             </Col>
           </Row>
